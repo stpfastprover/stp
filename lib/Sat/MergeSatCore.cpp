@@ -1,5 +1,5 @@
 /********************************************************************
- * AUTHORS: Vijay Ganesh, Dan Liew, Mate Soos, Norbert Manthey
+ * AUTHORS: Vijay Ganesh, Dan Liew, Mate Soos
  *
  * BEGIN DATE: November, 2005
  *
@@ -24,129 +24,110 @@ THE SOFTWARE.
 
 #define __STDC_FORMAT_MACROS
 #define MINISAT_CONSTANTS_AS_MACROS
-#include "stp/Sat/Riss.h"
-#include "riss/core/Solver.h"
+#include "stp/Sat/MergeSatCore.h"
+#include "minisat/core/Solver.h"
 //#include "utils/System.h"
 //#include "simp/SimpSolver.h"
 
-namespace Riss
+namespace MergeSat
 {
 }
-using namespace Riss;
+using namespace MergeSat;
 
 namespace stp
 {
 
-uint8_t RissCore::value(uint32_t x) const
+uint8_t MergeSatCore::value(uint32_t x) const
 {
-  return Riss::toInt(s->value(x));
+  return MergeSat::toInt(s->value(x));
 }
 
-RissCore::RissCore()
+MergeSatCore::MergeSatCore()
 {
-  s = new Riss::Solver;
-  riss_clause = new Riss::vec<Lit>();
+  s = new MergeSat::Solver;
 }
 
-RissCore::~RissCore()
+MergeSatCore::~MergeSatCore()
 {
   delete s;
-  if(riss_clause) {
-    Riss::vec<Riss::Lit> *v = (Riss::vec<Riss::Lit> *)riss_clause;
-    delete v;
-    riss_clause = 0;
-  }
 }
 
-void RissCore::setMaxConflicts(int64_t max_confl)
+void MergeSatCore::setMaxConflicts(int64_t max_confl)
 {
   s->setConfBudget(max_confl);
 }
 
-bool RissCore::addClause(
+bool MergeSatCore::addClause(
     const SATSolver::vec_literals& ps) // Add a clause to the solver.
 {
-  // convert the vector
-  Riss::vec<Lit> &v = *(Riss::vec<Riss::Lit> *)riss_clause;
-  v.capacity(ps.size());
-  v.clear();
-  for(int i = 0 ; i < ps.size(); ++ i) v.push_(Riss::toLit(MINISAT_NSPACE::toInt(ps[i])));
-
-  return s->addClause(v);
+  return s->addClause(ps);
 }
 
-bool RissCore::okay() const // FALSE means solver is in a conflicting state
+bool MergeSatCore::okay() const // FALSE means solver is in a conflicting state
 {
   return s->okay();
 }
 
 // *Doesn't solve*, just does a single unit propagate.
 // returns false if UNSAT.
-bool RissCore::propagateWithAssumptions(
+bool MergeSatCore::propagateWithAssumptions(
     const stp::SATSolver::vec_literals& assumps)
 {
   if (!s->simplify())
     return false;
 
   setMaxConflicts(0);
-
-  // convert the vector
-  Riss::vec<Lit> &v = *(Riss::vec<Riss::Lit> *)riss_clause;
-  v.capacity(assumps.size());
-  v.clear();
-  for(int i = 0 ; i < assumps.size(); ++ i) v.push_(Riss::toLit(MINISAT_NSPACE::toInt(assumps[i])));
-
-  Riss::lbool ret = s->solveLimited(v);
+  MergeSat::lbool ret = s->solveLimited(assumps);
   assert(s->conflicts ==0);
-  return ret != (Riss::lbool)l_False;
+  return ret != (MergeSat::lbool)l_False;
 }
 
-bool RissCore::solve(bool& timeout_expired) // Search without assumptions.
+bool MergeSatCore::solve(bool& timeout_expired) // Search without assumptions.
 {
   if (!s->simplify())
     return false;
 
-  Riss::vec<Riss::Lit> assumps;
-  Riss::lbool ret = s->solveLimited(assumps);
-  if (ret == (Riss::lbool)l_Undef)
+  MergeSat::vec<MergeSat::Lit> assumps;
+  MergeSat::lbool ret = s->solveLimited(assumps);
+  if (ret == (MergeSat::lbool)l_Undef)
   {
     timeout_expired = true;
   }
 
-  return ret == (Riss::lbool)l_True;
+  return ret == (MergeSat::lbool)l_True;
 }
 
-uint8_t RissCore::modelValue(uint32_t x) const
+uint8_t MergeSatCore::modelValue(uint32_t x) const
 {
-  return Riss::toInt(s->modelValue(x));
+  return MergeSat::toInt(s->modelValue(x));
 }
 
-uint32_t RissCore::newVar()
+uint32_t MergeSatCore::newVar()
 {
   return s->newVar();
 }
 
-void RissCore::setVerbosity(int v)
+void MergeSatCore::setVerbosity(int v)
 {
   s->verbosity = v;
 }
 
-unsigned long RissCore::nVars() const
+unsigned long MergeSatCore::nVars() const
 {
   return s->nVars();
 }
 
-void RissCore::printStats() const
+void MergeSatCore::printStats() const
 {
   //s->printStats();
 }
 
-int RissCore::nClauses()
+int MergeSatCore::nClauses()
 {
   return s->nClauses();
 }
 
-bool RissCore::simplify()
+bool MergeSatCore::simplify()
 {
   return s->simplify();
 }

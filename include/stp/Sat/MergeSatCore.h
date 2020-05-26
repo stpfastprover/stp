@@ -1,7 +1,7 @@
 /********************************************************************
- * AUTHORS: Trevor Hansen
+ * AUTHORS: Vijay Ganesh
  *
- * BEGIN DATE: 2010
+ * BEGIN DATE: November, 2005
  *
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ********************************************************************/
 
-#ifndef SIMPLIFYINGMINISAT_H_
-#define SIMPLIFYINGMINISAT_H_
+/*
+ * Wraps around CORE MergeSat.
+ */
+
+#ifndef MergeSat_H_
+#define MergeSat_H_
 
 #include "SATSolver.h"
 
-namespace MINISAT_NSPACE
+namespace MergeSat
 {
-class SimpSolver;
+class Solver;
 }
-
-#ifndef MINISAT_NSPACE
-#define MINISAT_NSPACE Minisat
-#endif
 
 namespace stp
 {
-class SimplifyingMinisat : public SATSolver
+#if defined(__GNUC__) || defined(__clang__)
+  class __attribute__((visibility("default"))) MergeSatCore : public SATSolver
+#else
+  class MergeSatCore : public SATSolver
+#endif
+
+
 {
-  MINISAT_NSPACE::SimpSolver* s;
+  MergeSat::Solver* s;
 
 public:
-  SimplifyingMinisat();
-  ~SimplifyingMinisat();
+  MergeSatCore();
+
+  ~MergeSatCore();
 
   bool addClause(const vec_literals& ps); // Add a clause to the solver.
 
@@ -52,15 +59,19 @@ public:
 
   bool solve(bool& timeout_expired); // Search without assumptions.
 
-  bool simplify(); // Removes already satisfied clauses.
+  bool propagateWithAssumptions(const stp::SATSolver::vec_literals& assumps);
 
   virtual void setMaxConflicts(int64_t max_confl);
 
-  void setVerbosity(int v);
+  virtual bool simplify(); // Removes already satisfied clauses.
 
   virtual uint8_t modelValue(uint32_t x) const;
 
+  uint8_t value(uint32_t x) const;
+
   virtual uint32_t newVar();
+
+  void setVerbosity(int v);
 
   unsigned long nVars() const;
 
@@ -70,8 +81,10 @@ public:
   virtual lbool false_literal() { return ((uint8_t)1); }
   virtual lbool undef_literal() { return ((uint8_t)2); }
 
-  virtual void setFrozen(uint32_t x);
+  virtual int nClauses();
+
+  //bool unitPropagate(const vec_literals& ps);
 };
 }
 
-#endif /* CORE_H_ */
+#endif
