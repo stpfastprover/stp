@@ -330,6 +330,11 @@ if (NOT MSVC)
     add_cxx_flag_if_supported("-Winit-self")
     add_cxx_flag_if_supported("-Wparentheses")
     add_cxx_flag_if_supported("-Wunreachable-code")
+
+    # Let's make things be errors -- we can't test for this
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+
     add_compile_options("-fPIC")
     # add_cxx_flag_if_supported("-flto") # slow compile and not enough benefits
 endif()
@@ -518,7 +523,7 @@ else()
     endif()
 endif()
 
-include_directories(${MINISAT_INCLUDE_DIRS})
+include_directories(SYSTEM ${MINISAT_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${MINISAT_LIBRARIES})
 
 # -----------------------------------------------------------------------------
