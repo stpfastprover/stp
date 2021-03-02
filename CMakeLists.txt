@@ -330,11 +330,6 @@ if (NOT MSVC)
     add_cxx_flag_if_supported("-Winit-self")
     add_cxx_flag_if_supported("-Wparentheses")
     add_cxx_flag_if_supported("-Wunreachable-code")
-
-    # Let's make things be errors -- we can't test for this
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-
     add_compile_options("-fPIC")
     # add_cxx_flag_if_supported("-flto") # slow compile and not enough benefits
 endif()
@@ -349,6 +344,18 @@ endif()
 option(COVERAGE "Build with coverage check" OFF)
 if (COVERAGE)
     add_cxx_flag("--coverage")
+endif()
+
+option(WERROR "Build with warnings as errors" OFF)
+if (WERROR)
+    if (NOT MSVC)
+        message(STATUS "Enabling treating warnings as errors")
+        # Let's make things be errors -- we can't test for this
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+    else()
+        message(STATUS "Warnings as errors is not enabled under MSVC")
+    endif()
 endif()
 
 option(USE_THREAD_LOCAL "Use thread-local storage when available" ON)
