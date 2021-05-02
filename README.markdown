@@ -21,8 +21,9 @@ For a quick install:
 ```
 sudo apt-get install cmake bison flex libboost-all-dev python perl minisat
 git clone https://github.com/stp/stp
-git submodule init && git submodule update
 cd stp
+./scripts/deps/setup-gtest.sh
+./scripts/deps/setup-outputcheck.sh
 mkdir build
 cd build
 cmake ..
@@ -128,6 +129,8 @@ $ cmake --build .
 $ sudo cmake --install .
 $ command -v ldconfig && sudo ldconfig
 ```
+
+Alternatively, these commands are pre-configused in `scripts/deps/setup-minisat.sh` and `scripts/deps/setup-cms.sh` (respectively).
 
 #### Building against non-installed libraries
 
